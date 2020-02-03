@@ -53,7 +53,7 @@ function toggle(tab) {
                       server_url = server_url.slice(0, -1);  // remove last char '/'
                   }
                   
-                  if(server_url.indexOf("http://") == -1){
+                  if(server_url.startsWith("http") == false){
                       server_url = "http://" + server_url;  // add http:// in the beginning
                   }
                   
@@ -85,15 +85,15 @@ function toggle(tab) {
       }
         
       // ask if user want to log out
-      var r = confirm("Do you want to keep saving the current authentication info?");
+      var r = confirm("Would you like to close the plugin and logout?");
       if (r == true) {
-          console.log("Previous authentication info will be kept!");
-      } else {
           // remove url and key
           chrome.storage.local.remove(['key'], function() {
             console.log("Logged in successfully!");
             alert("Logged out successfully!");
           });
+      } else {
+          console.log("Previous authentication info will be kept!");
       }
     }
   }
