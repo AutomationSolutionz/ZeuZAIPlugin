@@ -26,9 +26,6 @@ var xPathFinder = xPathFinder || (() => {
         
         // if (e.target.id !== this.contentNode) {
         if ((e.target.id !== this.modalNode) && (e.target.id !== this.elementNode)) {
-          
-            // deactivate plugin for now
-            this.deactivate();
 
             // get element info
             this.elem = {};
@@ -232,9 +229,19 @@ var xPathFinder = xPathFinder || (() => {
               e.target.removeAttributeNode(att);
             
             
-              // activate the plugin again
-              this.activate();
-
+            
+              // disable/deactivate the plugin
+              /*setTimeout(function(){
+                  // disable plugin
+                  inspect.deactivate();
+                  
+                  // deactivate plugin
+                  inspect.toggleActivate(tab.id, 'deactivate', defaultIcon);
+                  for (const tabId in tabs) {
+                    if (tabId == tab.id) delete tabs[tabId];
+                  }
+              }, 5000);*/
+            
           
         }
         
