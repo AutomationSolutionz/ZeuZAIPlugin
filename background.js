@@ -92,6 +92,7 @@ function toggle(tab) {
                               console.log(this.responseText);
                               //alert(this.status);
                               //alert(this.responseText);
+                              console.log(this.resonseText);
                               verify_status = this.status;
                               verify_token = this.responseText;
                               //alert(verify_status);
@@ -105,9 +106,13 @@ function toggle(tab) {
                                     }
                                     else{
                                         // save server url and api key
-                                        chrome.storage.local.set({ url: server_url ,key: api_key }, function () {
-                                        console.log('Value is set to ' , server_url , api_key);
-                                        alert("Logged in successfully!");
+                                        chrome.storage.local.set({ 
+                                            url: server_url,
+                                            key: JSON.parse(this.responseText)
+                                        },
+                                        function () {
+                                            console.log('Value is set to ' , server_url , this.responseText);
+                                            alert("Logged in successfully!");
                                         });
 
                                         // activate plugin
@@ -196,3 +201,37 @@ browserAppData.commands.onCommand.addListener(command => {
 
 browserAppData.tabs.onUpdated.addListener(getActiveTab);
 browserAppData.browserAction.onClicked.addListener(toggle);
+
+
+// Handle requests for siblings
+chrome.runtime.onMessage.addListener(function(request) {
+    if (request.type === 'request_sibling') {
+        chrome.tabs.create({
+            url: chrome.extension.getURL('dialog.html'),
+            active: false
+        }, function(tab) {
+            // After the tab has been created, open a window to inject the tab
+            chrome.windows.create({
+                tabId: tab.id,
+                type: 'popup',
+                focused: true
+                // incognito, top, left, ...
+            });
+        });
+		
+		sendResponse({message: "popup created!"});
+		
+    }
+	else{
+		sendResponse({message: "unknown request!"});
+	}
+    
+});
+
+// popup functions
+function setSiblings(siblings) {
+    // Do something, eg..:
+    chrome.runtime.sendMessage({message:'selected'}, function(response) {
+	  console.log(response.message);
+	});
+};

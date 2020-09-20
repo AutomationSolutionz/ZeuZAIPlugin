@@ -29,8 +29,10 @@
     }
   },
   "options_page": "options.html",
-  "permissions": ["activeTab",
+  "permissions": [
+    "activeTab",
     "<all_urls>", 
     "contextMenus",
-    "storage"]
+    "storage"
+                 ]
 }

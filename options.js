@@ -12,7 +12,7 @@ async function updateShortcut() {
   });
 }
 function logout() {
-  console.log("logout(");
+  console.log("logout");
   chrome.storage.local.remove(['key'], function () {
     alert("Logged out successfully!");
   });

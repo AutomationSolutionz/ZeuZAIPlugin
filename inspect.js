@@ -59,10 +59,40 @@ chrome.storage.local.get(['key'], function (result) {
             const contentNode = document.getElementById(this.contentNode);
             const modalNode = document.getElementById(this.modalNode);
             const contentParentNode = document.getElementById(this.contentParentNode);
+              
+              
+            // get sibling element
+            var nextSibling = e.target.nextElementSibling;
+            var prevSibling = e.target.previousElementSibling;
+            this.sibling = {};
+            var siblingElem = null;
+            if (nextSibling != null){
+                siblingElem = nextSibling;
+            }
+            else if (prevSibling != null){
+                siblingElem = prevSibling;
+            }
+            if (siblingElem != null){
+                this.sibling['original_html'] = siblingElem.outerHTML;    // save for backup data
+            }
+            else{
+                this.sibling['original_html'] = "";    // save for backup data
+            }
+              
+            // Set custom Zeuz attribute for sibling element
+            var attSib = document.createAttribute("zeuz-sibling");
+            attSib.value = "aiplugin-sibling";
+            if (siblingElem != null){
+                siblingElem.setAttributeNode(attSib);
+                this.sibling['html'] = siblingElem.outerHTML;    // save for data
+            }
+            else{
+                this.sibling['html'] = "";    // save for data
+            }
 
 
             // Get full page html, remove <style> and <script> tags //
-            // create a new dov container
+            // create a new div container
             var div = document.createElement('div');
             var myString = document.documentElement.outerHTML;
 
@@ -102,6 +132,7 @@ chrome.storage.local.get(['key'], function (result) {
 
             const tracker_info = {
               'elem': this.elem['html'],
+              'sibling': this.sibling['html'],
               'html': refinedHtml,
               'url': window.location.href,
               'source': 'web'
@@ -109,9 +140,35 @@ chrome.storage.local.get(['key'], function (result) {
 
             const backup_tracker_info = {
               'elem': this.elem['original_html'],
+              'sibling': this.sibling['original_html'],
               'url': window.location.href,
               'source': 'web'
             }
+            
+            // store siblings
+            //chrome.storage.local.set({siblings: ["hello", "hi"]});
+            
+            // testing purpose / choose sibling element
+            //console.log(this.sibling['html']);
+            /*if (confirm('Do you want to send sibling element info?'))
+                {   
+                    //chrome.runtime.sendMessage({type:'request_sibling'});
+                
+                    chrome.runtime.sendMessage({type:'request_sibling'}, function(response) {
+                      console.log(response.message);
+                    });
+					
+					//Get message from background page
+					chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+						//Alert the message
+						console.log("The message from the background page: " + request.message);//You have to choose which part of the response you want to display ie. request.greeting
+						//Construct & send a response
+						sendResponse({
+							message: "Message received from Background!"
+						});
+					});
+                    
+                }*/
 
 
             // copy action/element data
@@ -138,7 +195,6 @@ chrome.storage.local.get(['key'], function (result) {
                     var state = 4;
 
                     var xhr = new XMLHttpRequest();
-                    xhr.withCredentials = true;
 
                     xhr.addEventListener("readystatechange", function () {
                       if (this.readyState === 4) {
@@ -149,15 +205,8 @@ chrome.storage.local.get(['key'], function (result) {
                     });
 
                     xhr.open("POST", server_url + "/api/contents/");
-                    xhr.setRequestHeader("x-api-key", api_key);
                     xhr.setRequestHeader("Content-Type", "application/json");
-
-                    /*if((status === 200) && (state === 4)){
-                        xhr.send(data);    
-                    }
-                    else{
-                        xhr.send(backup_data);
-                    }*/
+                    xhr.setRequestHeader("Authorization", `Bearer ${api_key}`);
 
                     try {
                       xhr.send(data);
@@ -165,7 +214,6 @@ chrome.storage.local.get(['key'], function (result) {
                     catch (err) {
                       xhr.send(backup_data);
                     }
-
               }
               else {
                 
