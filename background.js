@@ -90,13 +90,9 @@ function toggle(tab) {
                     xhr.addEventListener("readystatechange", function() {
                           if(this.readyState === 4) {
                               console.log(this.responseText);
-                              //alert(this.status);
-                              //alert(this.responseText);
-                              console.log(this.resonseText);
+
                               verify_status = this.status;
-                              verify_token = this.responseText;
-                              //alert(verify_status);
-                              //alert(verify_token);
+                              verify_token = this.responseText;;
                               
                               // show message for verification
                                 if (verify_status === 200){
@@ -106,9 +102,10 @@ function toggle(tab) {
                                     }
                                     else{
                                         // save server url and api key
+                                        // chrome.storage.local.set({ url: server_url ,key: api_key }, function () {
                                         chrome.storage.local.set({ 
                                             url: server_url,
-                                            key: JSON.parse(this.responseText)
+                                            key: JSON.parse(this.responseText).token
                                         },
                                         function () {
                                             console.log('Value is set to ' , server_url , this.responseText);
@@ -158,18 +155,6 @@ function toggle(tab) {
         if (tabId == tab.id) delete tabs[tabId];
       }
 
-      // ask if user want to log out
-      /*var r = confirm("Would you like to close the plugin and logout?");
-      if (r == true) {
-          // remove url and key
-          chrome.storage.local.remove(['key'], function() {
-            console.log("Logged in successfully!");
-            alert("Logged out successfully!");
-          });
-      } else {
-          console.log("Previous authentication info will be kept!");
-      }
-      */
     }
   }
 }
@@ -201,37 +186,3 @@ browserAppData.commands.onCommand.addListener(command => {
 
 browserAppData.tabs.onUpdated.addListener(getActiveTab);
 browserAppData.browserAction.onClicked.addListener(toggle);
-
-
-// Handle requests for siblings
-chrome.runtime.onMessage.addListener(function(request) {
-    if (request.type === 'request_sibling') {
-        chrome.tabs.create({
-            url: chrome.extension.getURL('dialog.html'),
-            active: false
-        }, function(tab) {
-            // After the tab has been created, open a window to inject the tab
-            chrome.windows.create({
-                tabId: tab.id,
-                type: 'popup',
-                focused: true
-                // incognito, top, left, ...
-            });
-        });
-		
-		sendResponse({message: "popup created!"});
-		
-    }
-	else{
-		sendResponse({message: "unknown request!"});
-	}
-    
-});
-
-// popup functions
-function setSiblings(siblings) {
-    // Do something, eg..:
-    chrome.runtime.sendMessage({message:'selected'}, function(response) {
-	  console.log(response.message);
-	});
-};

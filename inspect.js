@@ -1,6 +1,5 @@
 /* globals chrome */
 chrome.storage.local.get(['key'], function (result) {
-  // console.log('Value currently is ' + result.key);
 
   if (result.key != null) {
     var xPathFinder = xPathFinder || (() => {
@@ -21,6 +20,7 @@ chrome.storage.local.get(['key'], function (result) {
           this.elementNode = 'myElement';
 
         }
+          
 
         getData(e) {
 
@@ -28,270 +28,325 @@ chrome.storage.local.get(['key'], function (result) {
           e.preventDefault && e.preventDefault();
           e.stopPropagation && e.stopPropagation();
 
-          // if (e.target.id !== this.contentNode) {
           if ((e.target.id !== this.modalNode) && (e.target.id !== this.elementNode)) {
-
-            // get element info
-            this.elem = {};
-            this.parent = {};
-            this.elem['original_html'] = e.target.outerHTML;    // save for backup data
-
-
-            // Set custom Zeuz attribute
-            var att = document.createAttribute("zeuz");
-            att.value = "aiplugin";
-            e.target.setAttributeNode(att);
-
-            // Get element data
-            // const XPath = this.getXPath(e.target);  // get xpath
-            // this.elem['id'] = e.target.id;
-            // this.elem['title'] = e.target.title;
-            // this.elem['href'] = e.target.href;
-            // this.elem['class'] = e.target.className;
-            this.elem['text'] = e.target.textContent;
-            const element_text = e.target.textContent;
-            // this.elem['type'] = e.target.tagName;
-            // this.elem['xpath'] = XPath;
-            this.elem['html'] = e.target.outerHTML;
-
-
-            // message element
-            const contentNode = document.getElementById(this.contentNode);
-            const modalNode = document.getElementById(this.modalNode);
-            const contentParentNode = document.getElementById(this.contentParentNode);
               
               
-            // get sibling element
-            var nextSibling = e.target.nextElementSibling;
-            var prevSibling = e.target.previousElementSibling;
-            this.sibling = {};
-            var siblingElem = null;
-            if (nextSibling != null){
-                siblingElem = nextSibling;
-            }
-            else if (prevSibling != null){
-                siblingElem = prevSibling;
-            }
-            if (siblingElem != null){
-                this.sibling['original_html'] = siblingElem.outerHTML;    // save for backup data
-            }
-            else{
-                this.sibling['original_html'] = "";    // save for backup data
-            }
-              
-            // Set custom Zeuz attribute for sibling element
-            var attSib = document.createAttribute("zeuz-sibling");
-            attSib.value = "aiplugin-sibling";
-            if (siblingElem != null){
-                siblingElem.setAttributeNode(attSib);
-                this.sibling['html'] = siblingElem.outerHTML;    // save for data
-            }
-            else{
-                this.sibling['html'] = "";    // save for data
-            }
+              // message element
+                const contentNode = document.getElementById(this.contentNode);
+                const modalNode = document.getElementById(this.modalNode);
+                const contentParentNode = document.getElementById(this.contentParentNode);
 
 
-            // Get full page html, remove <style> and <script> tags //
-            // create a new div container
-            var div = document.createElement('div');
-            var myString = document.documentElement.outerHTML;
-
-            // assign your HTML to div's innerHTML
-            div.innerHTML = myString;
-
-            // get all <script> elements from div
-            var elements = div.getElementsByTagName('script');
-
-            // remove all <script> elements
-            while (elements[0])
-              elements[0].parentNode.removeChild(elements[0])
-
-            // get all <style> elements from div
-            var elements = div.getElementsByTagName('style');
-
-            // remove all <style> elements
-            while (elements[0])
-              elements[0].parentNode.removeChild(elements[0])
-
-            // get div's innerHTML into a new variable
-            var refinedHtml = div.innerHTML;
-
-            // display it
-            //console.log(refinedHtml)
-
-
-            // Final data
-            /*const tracker_info = {
-                'elem': this.elem,
-                'parent': this.parent,
-                'iframe': document.activeElement.tagName,
-                'html': refinedHtml,
-                'url': window.location.href
-                //'html': document.documentElement.outerHTML
-            }*/
-
-            const tracker_info = {
-              'elem': this.elem['html'],
-              'sibling': this.sibling['html'],
-              'html': refinedHtml,
-              'url': window.location.href,
-              'source': 'web'
-            }
-
-            const backup_tracker_info = {
-              'elem': this.elem['original_html'],
-              'sibling': this.sibling['original_html'],
-              'url': window.location.href,
-              'source': 'web'
-            }
             
-            // store siblings
-            //chrome.storage.local.set({siblings: ["hello", "hi"]});
-            
-            // testing purpose / choose sibling element
-            //console.log(this.sibling['html']);
-            /*if (confirm('Do you want to send sibling element info?'))
-                {   
-                    //chrome.runtime.sendMessage({type:'request_sibling'});
+            // check if we are locating sibling now
+            chrome.storage.local.get('mainelem', function (result) {
                 
-                    chrome.runtime.sendMessage({type:'request_sibling'}, function(response) {
-                      console.log(response.message);
-                    });
-					
-					//Get message from background page
-					chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-						//Alert the message
-						console.log("The message from the background page: " + request.message);//You have to choose which part of the response you want to display ie. request.greeting
-						//Construct & send a response
-						sendResponse({
-							message: "Message received from Background!"
-						});
-					});
+                if (result.mainelem == null){   // no pre-selected element
                     
-                }*/
+                    this.elem = {};
+                    this.modalNode = 'myModal';
+                    
+                    // Set custom Zeuz attribute
+                    var att = document.createAttribute("zeuz");
+                    att.value = "aiplugin";
+                    e.target.setAttributeNode(att);
+
+                    // Get element data
+                    this.elem['text'] = e.target.textContent;
+                    const element_text = e.target.textContent;
+                    this.elem['html'] = e.target.outerHTML;
+                    this.elem['original_html'] = e.target.outerHTML;    // save for backup data
 
 
-            // copy action/element data
-            // this.options.clipboard && ( this.copyText(XPath) );
-            // this.options.clipboard && ( this.copyText(JSON.stringify(tracker_info)));
+                    // Get full page html, remove <style> and <script> tags //
+                    // create a new div container
+                    var div = document.createElement('div');
+                    var myString = document.documentElement.outerHTML;
 
+                    // assign your HTML to div's innerHTML
+                    div.innerHTML = myString;
 
-            // get url-key and send data to zeuz
-            chrome.storage.local.get(['key', 'url'], function (result) {
+                    // get all <script> elements from div
+                    var elements = div.getElementsByTagName('script');
 
-              // console.log('Value currently is ' + result.key);
-              var server_url = result.url;
-              var api_key = result.key;
+                    // remove all <script> elements
+                    while (elements[0])
+                      elements[0].parentNode.removeChild(elements[0])
 
-              if ((server_url.startsWith("https") == true) || (server_url.indexOf("localhost") != -1) || (server_url.indexOf("127.0.0.1") != -1) || (server_url.indexOf("0.0.0.0") != -1)) {
+                    // get all <style> elements from div
+                    var elements = div.getElementsByTagName('style');
 
-                    // send data to zeuz server directly
+                    // remove all <style> elements
+                    while (elements[0])
+                      elements[0].parentNode.removeChild(elements[0])
 
-                    var data = JSON.stringify({ "content": JSON.stringify(tracker_info), "source": "web" });
+                    // get div's innerHTML into a new variable
+                    var refinedHtml = div.innerHTML;
 
-                    var backup_data = JSON.stringify({ "content": JSON.stringify(backup_tracker_info), "source": "web" });
-
-                    var status = 200;
-                    var state = 4;
-
-                    var xhr = new XMLHttpRequest();
-
-                    xhr.addEventListener("readystatechange", function () {
-                      if (this.readyState === 4) {
-                        console.log(this.responseText);
-                      }
-                      state = this.readyState;
-                      status = this.status;
-                    });
-
-                    xhr.open("POST", server_url + "/api/contents/");
-                    xhr.setRequestHeader("Content-Type", "application/json");
-                    xhr.setRequestHeader("Authorization", `Bearer ${api_key}`);
-
-                    try {
-                      xhr.send(data);
-                    }
-                    catch (err) {
-                      xhr.send(backup_data);
-                    }
-              }
-              else {
-                
-                  // send data to zeuz server via https AI ACS server
-
-                    var data = JSON.stringify({ "data": { "content": JSON.stringify(tracker_info), "source": "web" }, "api_key": api_key, "server_url": server_url });
-
-                    var backup_data = JSON.stringify({ "data": { "content": JSON.stringify(backup_tracker_info), "source": "web" }, "api_key": api_key, "server_url": server_url });
-
-                    var status = 200;
-                    var state = 4;
-
-                    var xhr = new XMLHttpRequest();
-                    xhr.withCredentials = true;
-
-                    xhr.addEventListener("readystatechange", function () {
-                      if (this.readyState === 4) {
-                        console.log(this.responseText);
-                      }
-                      state = this.readyState;
-                      status = this.status;
-                    });
-
-                    xhr.open("POST", "https://Ai.ZeuZ.ai/ai/api/v1/register-data");
-                    xhr.setRequestHeader("Content-Type", "application/json");
-
-                    /*if((status === 200) && (state === 4)){
-                        xhr.send(data);    
-                    }
-                    else{
-                        xhr.send(backup_data);
-                    }*/
-
-                    try {
-                      xhr.send(data);
-                    }
-                    catch (err) {
-                      xhr.send(backup_data);
+                    
+                    const tracker_info = {
+                      'elem': this.elem['html'],
+                      'html': refinedHtml,
+                      'url': window.location.href,
+                      'source': 'web'
                     }
 
+                    const backup_tracker_info = {
+                      'elem': this.elem['original_html'],
+                      'url': window.location.href,
+                      'source': 'web'
+                    }
 
-              }
+                    // choose sibling element
+                    if (confirm('Do you want to select a helper sibling element?'))
+                        {   
+
+                            // let user select another element
+
+                            // show message about element 
+                            const modalText = '"' + element_text + '" element will be sent with a helper element. Please select a suitable one.';
+
+                            if (modalNode) {
+                              modalNode.innerText = modalText;
+                            }
+                            else {
+                              const modalHtml = document.createElement('div');
+                              modalHtml.innerText = modalText;
+                              modalHtml.id = this.modalNode;
+                              document.body.appendChild(modalHtml);
+                            }
 
 
-            });
+                            // store main
+                            //chrome.storage.local.set({mainelem: this.elem['html']});
+                            chrome.storage.local.set({mainelem: this.elem['html']}, function() {
+                                console.log('Main element is set to ' + element_text);
+                                
+                            });
 
 
-            // show message about element 
-            const modalText = '"' + element_text + '" element data was recorded. Please go to ZeuZ and select "Add Action by AI.';
+                        }
 
-            if (modalNode) {
-              modalNode.innerText = modalText;
-            }
-            else {
-              const modalHtml = document.createElement('div');
-              modalHtml.innerText = modalText;
-              modalHtml.id = this.modalNode;
-              document.body.appendChild(modalHtml);
-            }
+                    else {      // don't select sibling, send directly
+
+                        // copy action/element data
+                        // this.options.clipboard && ( this.copyText(XPath) );
+                        // this.options.clipboard && ( this.copyText(JSON.stringify(tracker_info)));
+
+                        // send data to zeuz server
+                        // this.sendData(tracker_info, backup_tracker_info);
+                        
+                        // get url-key and send data to zeuz
+                        chrome.storage.local.get(['key', 'url'], function (result) {
+
+                            // console.log('Value currently is ' + result.key);
+                            var server_url = result.url;
+                            var api_key = result.key;
 
 
-            // remove zeuz attribute
-            e.target.removeAttributeNode(att);
+                            // send data to zeuz server directly
+
+                            var data = JSON.stringify({ "content": JSON.stringify(tracker_info), "source": "web" });
+
+                            var backup_data = JSON.stringify({ "content": JSON.stringify(backup_tracker_info), "source": "web" });
+
+                            var status = 200;
+                            var state = 4;
+
+                            var xhr = new XMLHttpRequest();
+
+                            xhr.addEventListener("readystatechange", function () {
+                              if (this.readyState === 4) {
+                                  //console.log(this.responseText);
+                                  console.log(this.status);
+                              }
+                              state = this.readyState;
+                              status = this.status;
+                            });
+
+                            xhr.open("POST", server_url + "/api/contents/");
+                            xhr.setRequestHeader("Content-Type", "application/json");
+                            xhr.setRequestHeader("Authorization", `Bearer ${api_key}`);
+
+                            try {
+                              xhr.send(data);
+                            }
+                            catch (err) {
+                              xhr.send(backup_data);
+                            }
 
 
+                        });
 
-            // disable/deactivate the plugin
-            /*setTimeout(function(){
-                // disable plugin
-                inspect.deactivate();
-                
-                // deactivate plugin
-                inspect.toggleActivate(tab.id, 'deactivate', defaultIcon);
-                for (const tabId in tabs) {
-                  if (tabId == tab.id) delete tabs[tabId];
+
+                        
+                        // show message about element 
+                        const modalText = '"' + element_text + '" element data was recorded. Please go to ZeuZ and select "Add Action by AI.';
+                        console.log(modalText);
+                        
+                        if (modalNode) {
+                          modalNode.innerText = modalText;
+                        }
+                        else {
+                          const modalHtml = document.createElement('div');
+                          modalHtml.innerText = modalText;
+                          modalHtml.id = this.modalNode;
+                          document.body.appendChild(modalHtml);
+                        }
+
+
+                        // remove zeuz attribute
+                        e.target.removeAttributeNode(att);
+
+
+                    }
+                    
+                    
                 }
-            }, 5000);*/
+                
+                else {      // we are locating sibling now, send it with the main element
+                    
+                    
+                    this.sibling = {};
+                    this.modalNode = 'myModal';
+                    
+                    // Set custom Zeuz-sibling attribute
+                    var att = document.createAttribute("zeuz-sibling");
+                    att.value = "aiplugin-sibling";
+                    e.target.setAttributeNode(att);
 
+                    // Get element data
+                    this.sibling['text'] = e.target.textContent;
+                    const element_text = e.target.textContent;
+                    this.sibling['html'] = e.target.outerHTML;
+                    this.sibling['original_html'] = e.target.outerHTML;    // save for backup data
+
+
+                    // message element
+                    const contentNode = document.getElementById(this.contentNode);
+                    const modalNode = document.getElementById(this.modalNode);
+                    const contentParentNode = document.getElementById(this.contentParentNode);
+                    
+                    // Get full page html, remove <style> and <script> tags //
+                    // create a new div container
+                    var div = document.createElement('div');
+                    var myString = document.documentElement.outerHTML;
+
+                    // assign your HTML to div's innerHTML
+                    div.innerHTML = myString;
+
+                    // get all <script> elements from div
+                    var elements = div.getElementsByTagName('script');
+
+                    // remove all <script> elements
+                    while (elements[0])
+                      elements[0].parentNode.removeChild(elements[0])
+
+                    // get all <style> elements from div
+                    var elements = div.getElementsByTagName('style');
+
+                    // remove all <style> elements
+                    while (elements[0])
+                      elements[0].parentNode.removeChild(elements[0])
+
+                    // get div's innerHTML into a new variable
+                    var refinedHtml = div.innerHTML;
+
+                    
+                    // prepare data to send
+                    const tracker_info = {
+                      'elem': result.main,
+                      'sibling': this.sibling['html'],
+                      'html': refinedHtml,
+                      'url': window.location.href,
+                      'source': 'web'
+                    }
+
+                    const backup_tracker_info = {
+                      'elem': result.main,
+                      'sibling': this.sibling['original_html'],
+                      'url': window.location.href,
+                      'source': 'web'
+                    }
+                    
+                    
+                    // send data to zeuz server
+                    // this.sendData(tracker_info, backup_tracker_info);
+                    
+                    // get url-key and send data to zeuz
+                    chrome.storage.local.get(['key', 'url'], function (result) {
+
+                        // console.log('Value currently is ' + result.key);
+                        var server_url = result.url;
+                        var api_key = result.key;
+
+
+                        // send data to zeuz server directly
+
+                        var data = JSON.stringify({ "content": JSON.stringify(tracker_info), "source": "web" });
+
+                        var backup_data = JSON.stringify({ "content": JSON.stringify(backup_tracker_info), "source": "web" });
+
+                        var status = 200;
+                        var state = 4;
+
+                        var xhr = new XMLHttpRequest();
+
+                        xhr.addEventListener("readystatechange", function () {
+                          if (this.readyState === 4) {
+                              //console.log(this.responseText);
+                              console.log(this.status);
+                          }
+                          state = this.readyState;
+                          status = this.status;
+                        });
+
+                        xhr.open("POST", server_url + "/api/contents/");
+                        xhr.setRequestHeader("Content-Type", "application/json");
+                        xhr.setRequestHeader("Authorization", `Bearer ${api_key}`);
+
+                        try {
+                          xhr.send(data);
+                        }
+                        catch (err) {
+                          xhr.send(backup_data);
+                        }
+
+
+                    });
+
+                    
+
+
+                    // show message about element 
+                    const modalText = '"' + element_text + '" element data was recorded as helper. Please go to ZeuZ and select "Add Action by AI.';
+
+                    if (modalNode) {
+                      modalNode.innerText = modalText;
+                    }
+                    else {
+                      const modalHtml = document.createElement('div');
+                      modalHtml.innerText = modalText;
+                      modalHtml.id = this.modalNode;
+                      document.body.appendChild(modalHtml);
+                    }
+
+
+                    // remove zeuz attribute
+                    e.target.removeAttributeNode(att);
+                    
+                    
+                    // delete main element from storage
+                    // chrome.storage.local.set({main: null});
+                    chrome.storage.local.set({mainelem: null}, function() {
+                        console.log('Sibling/helper element sending completed.');
+                    });
+
+                    
+                }
+                
+            });
+              
 
           }
 
